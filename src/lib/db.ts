@@ -1,14 +1,19 @@
-import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
-import fs from 'node:fs';
+import { neon } from '@neondatabase/serverless';
 
-const dataDir = path.join(process.cwd(), 'data');
-fs.mkdirSync(dataDir, { recursive: true });
-let db: DatabaseSync | undefined;
+const databaseUrl = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
+
 export function getDb() {
-  if (!db) {
-    db = new DatabaseSync(path.join(dataDir, 'wedding.sqlite'));
-    db.exec(`CREATE TABLE IF NOT EXISTS rsvps (id INTEGER PRIMARY KEY AUTOINCREMENT, full_name TEXT NOT NULL, attendance TEXT NOT NULL, guest_count INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
-  }
-  return db;
+  if (!databaseUrl) throw new Error('Set DATABASE_URL or POSTGRES_URL to connect to Neon.');
+  return neon(databaseUrl);
+}
+
+export async function ensureRsvpsTable() {
+  const sql = getDb();
+  await sql`CREATE TABLE IF NOT EXISTS rsvps (
+    id BIGSERIAL PRIMARY KEY,
+    full_name TEXT NOT NULL,
+    attendance TEXT NOT NULL,
+    guest_count INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`;
 }

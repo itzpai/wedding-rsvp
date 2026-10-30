@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { ensureRsvpsTable, getDb } from '@/lib/db';
 
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
@@ -11,7 +11,9 @@ export async function POST(request: Request) {
     if (!fullName || !['Joyfully accepts', 'Regretfully declines'].includes(attendance) || !Number.isInteger(guestCount) || guestCount < 0 || guestCount > 20 || (attendance === 'Joyfully accepts' && guestCount < 1)) {
       return NextResponse.json({ error: 'Check your RSVP details.' }, { status: 400 });
     }
-    getDb().prepare('INSERT INTO rsvps (full_name, attendance, guest_count) VALUES (?, ?, ?)').run(fullName, attendance, attendance === 'Joyfully accepts' ? guestCount : 0);
+    await ensureRsvpsTable();
+    const sql = getDb();
+    await sql`INSERT INTO rsvps (full_name, attendance, guest_count) VALUES (${fullName}, ${attendance}, ${attendance === 'Joyfully accepts' ? guestCount : 0})`;
     return NextResponse.json({ ok: true });
   } catch { return NextResponse.json({ error: 'Could not save RSVP.' }, { status: 500 }); }
 }

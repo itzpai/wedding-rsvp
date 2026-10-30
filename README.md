@@ -15,10 +15,12 @@ A responsive wedding invitation and RSVP website for Pyae and Mon. It includes a
    npm install
    ```
 
-2. Create `.env.local` from `.env.example` and set a strong dashboard password:
+2. Create `.env.local` from `.env.example`. Set a strong dashboard password, a separate random session secret, and your Neon connection string (`DATABASE_URL`):
 
    ```env
    DASHBOARD_PASSWORD=your-long-random-password
+   ADMIN_SESSION_SECRET=another-long-random-secret
+   DATABASE_URL=your-neon-pooled-connection-string
    ```
 
 3. Start the development server:
@@ -31,9 +33,9 @@ A responsive wedding invitation and RSVP website for Pyae and Mon. It includes a
 
 ## RSVP dashboard
 
-Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard). Sign in with the password from `DASHBOARD_PASSWORD`; the username field accepts any value.
+Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard) and sign in with `DASHBOARD_PASSWORD`. Set `DATABASE_URL` (or `POSTGRES_URL`) and `DASHBOARD_PASSWORD` in Vercel's Production environment, then redeploy after changing them. Set `ADMIN_SESSION_SECRET` to a separate random secret to sign and validate dashboard sessions.
 
-RSVP submissions are stored in `data/wedding.sqlite`. Keep this file backed up if you need to retain responses.
+RSVP submissions are stored in the Neon Postgres database. The app creates the `rsvps` table on first use.
 
 ## Commands
 
@@ -45,4 +47,4 @@ RSVP submissions are stored in `data/wedding.sqlite`. Keep this file backed up i
 
 ## Deployment notes
 
-Deploy to a Node.js host with a persistent writable disk so the SQLite database remains available. Serverless platforms generally need a managed database instead. Set `DASHBOARD_PASSWORD` in the host's environment configuration, use a unique password, and serve the dashboard over HTTPS.
+Set `DATABASE_URL`, `DASHBOARD_PASSWORD`, and `ADMIN_SESSION_SECRET` in the host's environment configuration. Use unique random secrets and serve the dashboard over HTTPS.
